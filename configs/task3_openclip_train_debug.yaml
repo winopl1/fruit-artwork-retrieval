@@ -1,0 +1,52 @@
+student_id: "202301774"
+
+paths:
+  data_root: "data"
+  gallery_split: "train"
+  query_split: "train"
+  output_dir: "release"
+  work_dir: "work"
+
+data:
+  image_subdir: "images"
+  label_candidates:
+    - "labels.csv"
+    - "train_labels.csv"
+    - "test_labels.csv"
+  image_extensions:
+    - ".jpg"
+    - ".jpeg"
+    - ".png"
+    - ".webp"
+
+model:
+  name: "open_clip"
+  open_clip_model: "ViT-B-32"
+  open_clip_pretrained: "laion2b_s34b_b79k"
+  resnet_weights: "DEFAULT"
+  image_size: 224
+  batch_size: 32
+  num_workers: 0
+  device: "auto"
+
+retrieval:
+  top_k: 5
+  metric: "cosine"
+  exclude_self: true
+  output_name: "{student_id}.train.openclip.debug.task3.txt"
+
+evaluation:
+  enabled: true
+  match_fields:
+    - "fruit_label"
+    - "style_label"
+
+visualization:
+  enabled: true
+  max_queries: 12
+  tile_size: 128
+  output_name: "openclip_train_contact_sheet.jpg"
+  balanced: true
+  group_field: "fruit_label"
+  per_group: 2
+  balanced_output_name: "openclip_train_fruit_balanced_contact_sheet.jpg"

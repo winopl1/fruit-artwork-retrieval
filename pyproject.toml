@@ -1,0 +1,22 @@
+[project]
+name = "task3-mac"
+version = "0.1.0"
+description = "Fruit artwork image retrieval with embedding similarity search"
+requires-python = ">=3.10"
+dependencies = [
+  "torch",
+  "torchvision",
+  "numpy",
+  "pandas",
+  "Pillow",
+  "PyYAML",
+  "tqdm",
+  "scikit-learn",
+  "open_clip_torch",
+]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
