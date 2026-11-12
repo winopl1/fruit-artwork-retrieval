@@ -1,23 +1,25 @@
-# Task3 Mac: Fruit Artwork Image Retrieval
+# Task3 Mac: 과일 그림 이미지 검색
 
-Local image retrieval for fruit artwork. The pipeline extracts pretrained image embeddings, searches for the five most similar images by cosine similarity, and writes the Task3 tuple format. It supports OpenCLIP (main model) and ResNet18 (baseline).
+과일 그림에서 비슷한 이미지를 찾는 로컬 이미지 검색 프로젝트입니다. 사전 학습된 모델로 이미지 임베딩을 추출하고, 코사인 유사도가 높은 이미지 5장을 찾아 Task3 제출 형식으로 저장합니다. OpenCLIP을 주 모델로 사용하고 ResNet18을 비교 기준으로 사용합니다.
 
-## Current status
+## 진행 상태와 결과
 
-The 7,200 train images have been run through both models. The test image directory is currently empty, so the final `test.task3.txt` has not been generated. Results below measure retrieval within the train split with the query itself excluded; they are not held-out test scores.
+train 이미지 7,200장으로 두 모델의 검색을 실행했습니다. 아래 수치는 **train 데이터 안에서 검색한 결과**이며, 각 질의 이미지는 자신의 검색 결과에서 제외했습니다. 별도의 test 데이터로 평가한 점수는 아닙니다.
 
-| Encoder | Top-5 fruit match | Top-5 style match | Top-5 fruit + style match |
+| 모델 | Top-5 과일 일치율 | Top-5 스타일 일치율 | Top-5 과일·스타일 동시 일치율 |
 | --- | ---: | ---: | ---: |
 | ResNet18 | 96.61% | 95.39% | 92.11% |
 | OpenCLIP ViT-B/32 | 99.05% | 99.06% | 98.12% |
 
-Each figure is the mean fraction of the five retrieved items matching the query label across all 7,200 train queries. See the [fruit-balanced OpenCLIP contact sheet](examples/openclip_train_fruit_balanced_contact_sheet.jpg) for two queries from each of the six fruit classes.
+각 수치는 질의 이미지마다 상위 5개 검색 결과 중 라벨이 일치하는 비율을 구한 뒤, 질의 7,200장에 대해 평균한 값입니다. 아래 이미지는 과일 6종에서 질의 이미지를 2장씩 골라 OpenCLIP 검색 결과를 보여줍니다.
 
-![OpenCLIP train retrieval examples for six fruits](examples/openclip_train_fruit_balanced_contact_sheet.jpg)
+![과일 6종의 OpenCLIP train 검색 결과](examples/openclip_train_fruit_balanced_contact_sheet.jpg)
 
-## Data layout
+현재 `data/test/images/`가 비어 있어 최종 제출용 `release/202301774.test.task3.txt`는 아직 생성하지 않았습니다.
 
-Dataset files are local and excluded from Git. Put images and label CSVs under `data/`:
+## 데이터 구조
+
+이미지와 라벨 CSV는 Git에 포함하지 않습니다. 로컬 프로젝트의 `data/` 아래에 다음과 같이 배치합니다.
 
 ```text
 data/
@@ -29,11 +31,11 @@ data/
     test_labels.csv
 ```
 
-The label CSV needs a filename column (`file_name`, `filename`, `image`, `path`, or `id`) and style/fruit label columns. `style`, `fruit`, `style_label`, and `fruit_label` are recognized. The final config uses the test split for both queries and gallery, so test images and their labels are needed to produce meaningful labeled tuples.
+라벨 CSV에는 이미지 파일명 열(`file_name`, `filename`, `image`, `path`, `id` 중 하나)과 스타일·과일 라벨 열이 필요합니다. 라벨 열 이름은 `style`, `fruit`, `style_label`, `fruit_label`을 인식합니다. 최종 설정에서는 test 이미지를 질의와 검색 대상에 모두 사용하므로, 결과에 라벨을 기록하려면 test 이미지와 해당 라벨 CSV가 필요합니다.
 
-## Setup on macOS
+## macOS 실행 환경
 
-From this project directory, activate the existing Task2 environment if available:
+기존 Task2 가상환경을 재사용하는 경우, 프로젝트 폴더에서 다음 명령을 실행합니다.
 
 ```bash
 source /Volumes/공부/project2/task2_mac/.venv/bin/activate
@@ -41,23 +43,23 @@ python -m pip install -e .
 python scripts/check_device.py
 ```
 
-For an independent environment, create one with `python -m venv .venv`, activate it, then run `python -m pip install -e .`. On Apple Silicon, `scripts/check_device.py` should report `mps available: True` when PyTorch can use the GPU.
+별도 가상환경을 사용하려면 `python -m venv .venv`로 만든 뒤 활성화하고 `python -m pip install -e .`를 실행합니다. Apple Silicon에서 PyTorch가 GPU를 사용할 수 있다면 장치 확인 결과에 `mps available: True`가 표시됩니다.
 
-## Run
+## 검색 실행
 
-Train-only checks:
+train 데이터로 파이프라인과 검색 결과를 확인합니다.
 
 ```bash
 python scripts/run_retrieval.py --config configs/task3_train_debug.yaml
 python scripts/run_retrieval.py --config configs/task3_openclip_train_debug.yaml
 ```
 
-Once the test images and labels are present, generate the final result:
+test 이미지와 라벨을 준비한 뒤 최종 결과를 생성합니다.
 
 ```bash
 python scripts/run_retrieval.py --config configs/task3_mac.yaml
 ```
 
-This writes `release/202301774.test.task3.txt`, a retrieval report, and a contact sheet. Each line contains five `(id,style_label,fruit_label)` tuples, in numeric query filename order. The query image is excluded from its own search results.
+실행하면 `release/202301774.test.task3.txt`, 검색 평가 CSV, 결과 이미지가 생성됩니다. 결과 파일은 숫자 파일명 순서대로 질의 이미지당 한 줄이며, 각 줄에 검색된 이미지 5개의 `(id,style_label,fruit_label)` 튜플이 들어갑니다. 질의 이미지 자신은 검색 결과에서 제외합니다.
 
-`release/`, `data/`, `work/`, model weights, and environments are ignored by Git. Only the small representative image in `examples/` is published.
+`data/`, `release/`, `work/`, 모델 가중치, 가상환경은 Git 추적 대상에서 제외합니다. GitHub에는 대표 이미지 1장만 `examples/`에 포함합니다.
